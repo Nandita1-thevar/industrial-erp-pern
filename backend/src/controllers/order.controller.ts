@@ -1,0 +1,4 @@
+import {Request,Response} from 'express'; import {prisma} from '../config/prisma'; import {z} from 'zod'; import {confirmOrder,dispatchOrder} from '../services/order.service';
+export async function listOrders(_req:Request,res:Response){res.json(await prisma.salesOrder.findMany({include:{customer:true,quotation:true,items:{include:{product:true}},dispatches:{include:{items:true}}},orderBy:{orderDate:'desc'}}));}
+export async function confirm(req:Request,res:Response){res.json(await confirmOrder(Number(req.params.id)));}
+export async function dispatch(req:Request,res:Response){const b=z.object({vehicleNo:z.string().min(3),driverName:z.string().min(2),items:z.array(z.object({productId:z.number().int().positive(),quantity:z.number().positive()})).min(1)}).parse(req.body);res.status(201).json(await dispatchOrder(Number(req.params.id),b));}
